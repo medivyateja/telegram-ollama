@@ -19,10 +19,11 @@ A web application built with Express.js, EJS templating engine, and Tailwind CSS
 
 1. Clone the repository:
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/medivyateja/node-express.git
+```
+```bash
 cd node-express
 ```
-
 2. Install dependencies:
 ```bash
 npm install

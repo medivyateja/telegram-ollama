@@ -54,7 +54,6 @@ The application will be available at `http://localhost:3000`.
 │       └── styles.css
 ├── views/
 │   └── index.ejs
-├── .env
 ├── .gitignore
 ├── index.js
 ├── package.json

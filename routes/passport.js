@@ -1,24 +1,17 @@
-const express = require('express');
-const path = require('path');
+// First, install required packages:
+// npm install passport passport-local express-session bcryptjs express-flash
+
+// Update your app.js with these additions:
 const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcryptjs');
 const flash = require('express-flash');
 const fs = require('fs').promises;
+const path = require('path');
 
-require('dotenv').config();
-
-const app = express();
-const port = process.env.PORT || 3000;
-
-// View engine setup
-app.set('view engine', 'ejs');
-
-// Middleware
-app.use(express.json());
+// Middleware setup
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key',
     resave: false,
@@ -93,23 +86,19 @@ function ensureAuthenticated(req, res, next) {
     res.redirect('/login');
 }
 
-// Make user data available to all views
+// Apply authentication to all routes except auth routes
 app.use((req, res, next) => {
-    res.locals.user = req.user;
-    res.locals.messages = req.flash();
-    next();
-});
-
-// Routes
-app.get('/', ensureAuthenticated, (req, res) => {
-    res.render('index', { title: 'Home' });
-});
-
-app.get('/login', (req, res) => {
-    if (req.isAuthenticated()) {
-        return res.redirect('/');
+    const publicPaths = ['/login', '/signup', '/forgot-password', '/reset-password'];
+    if (publicPaths.includes(req.path) || req.isAuthenticated()) {
+        next();
+    } else {
+        res.redirect('/login');
     }
-    res.render('login', { title: 'Login' });
+});
+
+// Auth routes
+app.get('/login', (req, res) => {
+    res.render('login', { messages: req.flash() });
 });
 
 app.post('/login', passport.authenticate('local', {
@@ -119,10 +108,7 @@ app.post('/login', passport.authenticate('local', {
 }));
 
 app.get('/signup', (req, res) => {
-    if (req.isAuthenticated()) {
-        return res.redirect('/');
-    }
-    res.render('signup', { title: 'Sign Up' });
+    res.render('signup', { messages: req.flash() });
 });
 
 app.post('/signup', async (req, res) => {
@@ -164,10 +150,7 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/forgot-password', (req, res) => {
-    res.render('forgot-password', { 
-        title: 'Forgot Password',
-        step: 'username' 
-    });
+    res.render('forgot-password', { step: 'username', messages: req.flash() });
 });
 
 app.post('/forgot-password', async (req, res) => {
@@ -188,10 +171,15 @@ app.post('/forgot-password', async (req, res) => {
     
     if (step === 'dob') {
         const user = await findUser(username);
-        if (user.dob !== dob) {
+        // Format both dates to YYYY-MM-DD for comparison
+        const userDob = new Date(user.dob).toISOString().split('T')[0];
+        const inputDob = new Date(dob).toISOString().split('T')[0];
+        
+        if (userDob !== inputDob) {
             req.flash('error', 'Incorrect date of birth');
             return res.redirect('/forgot-password');
         }
+        
         return res.render('forgot-password', { 
             title: 'Forgot Password',
             step: 'reset',
@@ -200,48 +188,34 @@ app.post('/forgot-password', async (req, res) => {
     }
 
     if (step === 'reset') {
-        const { username, newPassword, confirmPassword } = req.body;
-        if (newPassword !== confirmPassword) {
-            req.flash('error', 'Passwords do not match');
-            return res.render('forgot-password', { 
-                title: 'Forgot Password',
-                step: 'reset',
-                username,
-            });
+        try {
+            const { username, newPassword, confirmPassword } = req.body;
+            
+            if (newPassword !== confirmPassword) {
+                req.flash('error', 'Passwords do not match');
+                return res.render('forgot-password', { 
+                    title: 'Forgot Password',
+                    step: 'reset',
+                    username,
+                });
+            }
+
+            const user = await findUser(username);
+            if (!user) {
+                req.flash('error', 'User not found');
+                return res.redirect('/forgot-password');
+            }
+
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            user.password = hashedPassword;
+            await saveUser(user);
+
+            req.flash('success', 'Password reset successful. Please log in.');
+            res.redirect('/login');
+        } catch (error) {
+            console.error('Password reset error:', error);
+            req.flash('error', 'Error resetting password');
+            res.redirect('/forgot-password');
         }
-
-        const user = await findUser(username);
-        user.password = await bcrypt.hash(newPassword, 10);
-        await saveUser(user);
-
-        req.flash('success', 'Password reset successful. Please log in.');
-        res.redirect('/login');
     }
-});
-
-// Protected route example
-app.get('/profile', ensureAuthenticated, (req, res) => {
-    res.render('profile', { title: 'Profile' });
-});
-
-// Custom 404 page
-app.use((req, res, next) => {
-    res.status(404).render('404', {
-        title: '404 - Page Not Found',
-        path: req.path
-    });
-});
-
-// Error handler
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).render('500', {
-        title: '500 - Server Error',
-        error: process.env.NODE_ENV === 'development' ? err : {}
-    });
-});
-
-// Start server
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
 });

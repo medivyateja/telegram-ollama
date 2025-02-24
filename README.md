@@ -1,4 +1,4 @@
-# Express EJS Tailwind Project
+# Express EJS Tailwind Admin Project
 
 A web application built with Express.js, EJS templating engine, and Tailwind CSS.
 

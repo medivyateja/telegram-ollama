@@ -102,7 +102,10 @@ app.use((req, res, next) => {
 
 // Routes
 app.get('/', ensureAuthenticated, (req, res) => {
-    res.render('index', { title: 'Home' });
+  res.render('index', { 
+      user: req.user,
+      title: 'Home'
+  });
 });
 
 app.get('/login', (req, res) => {

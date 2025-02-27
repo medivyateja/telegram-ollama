@@ -100,12 +100,19 @@ app.use((req, res, next) => {
     next();
 });
 
+// Import Telegram routes
+const telegramRoutes = require('./routes/telegram');
+const telegramMonitorRoutes = require('./routes/telegram-monitor');
+
+// Use Telegram routes
+app.use('/telegram', telegramRoutes);
+app.use('/telegram', telegramMonitorRoutes);
+
 // Routes
 app.get('/', ensureAuthenticated, (req, res) => {
-  res.render('index', { 
-      user: req.user,
-      title: 'Home'
-  });
+    res.render('index', { 
+        title: 'Home'
+    });
 });
 
 app.get('/login', (req, res) => {
@@ -148,6 +155,7 @@ app.post('/signup', async (req, res) => {
             username,
             password: hashedPassword,
             dob,
+            telegramConnected: false,
             createdAt: new Date()
         });
 
@@ -191,10 +199,15 @@ app.post('/forgot-password', async (req, res) => {
     
     if (step === 'dob') {
         const user = await findUser(username);
-        if (user.dob !== dob) {
+        // Format both dates to YYYY-MM-DD for comparison
+        const userDob = new Date(user.dob).toISOString().split('T')[0];
+        const inputDob = new Date(dob).toISOString().split('T')[0];
+        
+        if (userDob !== inputDob) {
             req.flash('error', 'Incorrect date of birth');
             return res.redirect('/forgot-password');
         }
+        
         return res.render('forgot-password', { 
             title: 'Forgot Password',
             step: 'reset',
@@ -203,22 +216,35 @@ app.post('/forgot-password', async (req, res) => {
     }
 
     if (step === 'reset') {
-        const { username, newPassword, confirmPassword } = req.body;
-        if (newPassword !== confirmPassword) {
-            req.flash('error', 'Passwords do not match');
-            return res.render('forgot-password', { 
-                title: 'Forgot Password',
-                step: 'reset',
-                username,
-            });
+        try {
+            const { username, newPassword, confirmPassword } = req.body;
+            
+            if (newPassword !== confirmPassword) {
+                req.flash('error', 'Passwords do not match');
+                return res.render('forgot-password', { 
+                    title: 'Forgot Password',
+                    step: 'reset',
+                    username,
+                });
+            }
+
+            const user = await findUser(username);
+            if (!user) {
+                req.flash('error', 'User not found');
+                return res.redirect('/forgot-password');
+            }
+
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            user.password = hashedPassword;
+            await saveUser(user);
+
+            req.flash('success', 'Password reset successful. Please log in.');
+            res.redirect('/login');
+        } catch (error) {
+            console.error('Password reset error:', error);
+            req.flash('error', 'Error resetting password');
+            res.redirect('/forgot-password');
         }
-
-        const user = await findUser(username);
-        user.password = await bcrypt.hash(newPassword, 10);
-        await saveUser(user);
-
-        req.flash('success', 'Password reset successful. Please log in.');
-        res.redirect('/login');
     }
 });
 
@@ -244,7 +270,24 @@ app.use((err, req, res, next) => {
     });
 });
 
+// Create necessary directories at startup
+async function initDirectories() {
+    try {
+        // Ensure users directory exists
+        await ensureUsersDirectory();
+        
+        // Ensure data directory for message storage exists
+        const dataDir = path.join(__dirname, 'public', 'data');
+        await fs.mkdir(dataDir, { recursive: true });
+        
+        console.log('Directories initialized successfully');
+    } catch (error) {
+        console.error('Error initializing directories:', error);
+    }
+}
+
 // Start server
-app.listen(port, () => {
+app.listen(port, async () => {
+    await initDirectories();
     console.log(`Server running at http://localhost:${port}`);
 });

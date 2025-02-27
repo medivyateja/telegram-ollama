@@ -15,6 +15,9 @@ let client = null;
 let monitorActive = false;
 let newMessageHandler = null;
 
+// Get the user's own phone number from environment variables
+const OWN_PHONE_NUMBER = process.env.TELEGRAM_PHONE;
+
 // Data directory for storing user messages
 const DATA_DIR = path.join(__dirname, '..', 'public', 'data');
 
@@ -76,9 +79,36 @@ function formatDate(date) {
     }
 }
 
+// Check if a user is the account owner
+function isOwnAccount(sender) {
+    if (!sender) return false;
+    
+    // Check by phone number if available
+    if (sender.phone && OWN_PHONE_NUMBER) {
+        // Normalize phone numbers by removing anything that's not a digit
+        const normalizedSenderPhone = sender.phone.replace(/\D/g, '');
+        const normalizedOwnPhone = OWN_PHONE_NUMBER.replace(/\D/g, '');
+        
+        if (normalizedSenderPhone === normalizedOwnPhone) {
+            return true;
+        }
+    }
+    
+    // Additional checks can be added here if needed
+    // For example, checking by username or ID if you know them
+    
+    return false;
+}
+
 // Save user message to JSON file
 async function saveUserMessage(sender, message) {
     await ensureDataDirectory();
+    
+    // Skip messages from your own account
+    if (isOwnAccount(sender)) {
+        console.log('Skipping message from own account');
+        return;
+    }
     
     // Create a filename based on the user's ID
     const filename = `${sender.id}.json`;
@@ -131,6 +161,10 @@ async function startMonitoring() {
     try {
         const telegramClient = await initializeClient();
         
+        // Get own user information to help with filtering
+        const me = await telegramClient.getMe();
+        console.log('Logged in as:', me.firstName, me.lastName || '', `(${me.phone || 'No phone'})`);
+        
         // Register new message event handler
         newMessageHandler = telegramClient.addEventHandler(async (event) => {
             try {
@@ -142,6 +176,15 @@ async function startMonitoring() {
                 // Get the sender
                 const sender = await message.getSender();
                 if (!sender || sender.isChannel || sender.isGroup) return;
+                
+                // Skip messages from your own account
+                if (isOwnAccount(sender) || (me && sender.id === me.id)) {
+                    console.log('Skipping message from own account');
+                    return;
+                }
+                
+                // Log basic info about the message
+                console.log(`Received message from ${sender.firstName || ''} ${sender.lastName || ''} (ID: ${sender.id})`);
                 
                 // Save the message
                 await saveUserMessage(sender, message);
@@ -274,6 +317,28 @@ router.get('/monitor/user/:id', ensureAuthenticated, async (req, res) => {
     } catch (error) {
         console.error('Error retrieving user messages:', error);
         req.flash('error', 'Error retrieving user messages: ' + error.message);
+        res.redirect('/telegram/monitor');
+    }
+});
+
+// Route to delete user data
+router.post('/monitor/user/:id/delete', ensureAuthenticated, async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const filePath = path.join(DATA_DIR, `${userId}.json`);
+        
+        try {
+            await fs.access(filePath);
+            await fs.unlink(filePath);
+            req.flash('success', 'User data deleted successfully');
+        } catch (error) {
+            req.flash('error', 'Could not delete user data: ' + error.message);
+        }
+        
+        res.redirect('/telegram/monitor');
+    } catch (error) {
+        console.error('Error deleting user data:', error);
+        req.flash('error', 'Error deleting user data: ' + error.message);
         res.redirect('/telegram/monitor');
     }
 });

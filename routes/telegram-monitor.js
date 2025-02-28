@@ -15,6 +15,9 @@ let client = null;
 let monitorActive = false;
 let newMessageHandler = null;
 
+// Track ignored user IDs (users whose monitoring is paused)
+let ignoredUsers = new Set();
+
 // Get the user's own phone number from environment variables
 const OWN_PHONE_NUMBER = process.env.TELEGRAM_PHONE;
 
@@ -94,9 +97,6 @@ function isOwnAccount(sender) {
         }
     }
     
-    // Additional checks can be added here if needed
-    // For example, checking by username or ID if you know them
-    
     return false;
 }
 
@@ -110,6 +110,12 @@ async function saveUserMessage(sender, message) {
         return;
     }
     
+    // Skip messages from ignored users
+    if (ignoredUsers.has(sender.id.toString())) {
+        console.log(`Skipping message from ignored user: ${sender.id}`);
+        return;
+    }
+    
     // Create a filename based on the user's ID
     const filename = `${sender.id}.json`;
     const filePath = path.join(DATA_DIR, filename);
@@ -117,7 +123,8 @@ async function saveUserMessage(sender, message) {
     // Check if file exists and read existing data
     let userData = { 
         profile: {}, 
-        messages: [] 
+        messages: [],
+        monitoringActive: true
     };
     
     try {
@@ -125,6 +132,12 @@ async function saveUserMessage(sender, message) {
         if (fileExists) {
             const data = await fs.readFile(filePath, 'utf8');
             userData = JSON.parse(data);
+            
+            // If the user has monitoring disabled in their profile, skip
+            if (userData.monitoringActive === false) {
+                console.log(`Skipping message from user with disabled monitoring: ${sender.id}`);
+                return;
+            }
         }
     } catch (error) {
         console.error(`Error reading data file for user ${sender.id}:`, error);
@@ -140,6 +153,11 @@ async function saveUserMessage(sender, message) {
         lastUpdated: formatDate(new Date())
     };
     
+    // Make sure monitoringActive property exists
+    if (userData.monitoringActive === undefined) {
+        userData.monitoringActive = true;
+    }
+    
     // Add the new message
     userData.messages.push({
         id: message.id,
@@ -154,12 +172,38 @@ async function saveUserMessage(sender, message) {
     console.log(`Saved message from user ${sender.id} (${sender.firstName || ''} ${sender.lastName || ''})`);
 }
 
+// Load ignored users from data files
+async function loadIgnoredUsers() {
+    ignoredUsers.clear();
+    
+    try {
+        const files = await fs.readdir(DATA_DIR);
+        for (const file of files) {
+            if (file.endsWith('.json')) {
+                const filePath = path.join(DATA_DIR, file);
+                const content = await fs.readFile(filePath, 'utf8');
+                const userData = JSON.parse(content);
+                
+                if (userData.monitoringActive === false) {
+                    ignoredUsers.add(userData.profile.id.toString());
+                }
+            }
+        }
+        console.log(`Loaded ${ignoredUsers.size} ignored users`);
+    } catch (error) {
+        console.error('Error loading ignored users:', error);
+    }
+}
+
 // Start monitoring messages
 async function startMonitoring() {
     if (monitorActive) return;
     
     try {
         const telegramClient = await initializeClient();
+        
+        // Load ignored users
+        await loadIgnoredUsers();
         
         // Get own user information to help with filtering
         const me = await telegramClient.getMe();
@@ -215,6 +259,35 @@ function stopMonitoring() {
     }
 }
 
+// Toggle monitoring for a specific user
+async function toggleUserMonitoring(userId, enable) {
+    try {
+        const filePath = path.join(DATA_DIR, `${userId}.json`);
+        await fs.access(filePath); // Check if file exists
+        
+        const content = await fs.readFile(filePath, 'utf8');
+        const userData = JSON.parse(content);
+        
+        // Update monitoring status
+        userData.monitoringActive = enable;
+        
+        // Save updated data
+        await fs.writeFile(filePath, JSON.stringify(userData, null, 2), 'utf8');
+        
+        // Update ignored users set
+        if (enable) {
+            ignoredUsers.delete(userId.toString());
+        } else {
+            ignoredUsers.add(userId.toString());
+        }
+        
+        return true;
+    } catch (error) {
+        console.error(`Error toggling monitoring for user ${userId}:`, error);
+        return false;
+    }
+}
+
 // Middleware to ensure user is authenticated
 function ensureAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
@@ -244,11 +317,17 @@ router.get('/monitor', ensureAuthenticated, async (req, res) => {
                     const content = await fs.readFile(filePath, 'utf8');
                     const userData = JSON.parse(content);
                     
+                    // Ensure monitoringActive property exists
+                    if (userData.monitoringActive === undefined) {
+                        userData.monitoringActive = true;
+                    }
+                    
                     users.push({
                         id: userData.profile.id,
                         name: `${userData.profile.firstName || ''} ${userData.profile.lastName || ''}`.trim() || 'Unnamed',
                         username: userData.profile.username || 'No username',
                         messageCount: userData.messages.length,
+                        monitoringActive: userData.monitoringActive,
                         lastMessage: userData.messages.length > 0 
                             ? userData.messages[userData.messages.length - 1].date
                             : null
@@ -294,6 +373,40 @@ router.post('/monitor/stop', ensureAuthenticated, (req, res) => {
     res.redirect('/telegram/monitor');
 });
 
+// Toggle monitoring for a specific user
+router.post('/monitor/user/:id/toggle', ensureAuthenticated, async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { action } = req.body;
+        const enable = action === 'start';
+        
+        const success = await toggleUserMonitoring(userId, enable);
+        
+        if (success) {
+            req.flash('success', `Monitoring ${enable ? 'started' : 'stopped'} for this user`);
+        } else {
+            req.flash('error', `Failed to ${enable ? 'start' : 'stop'} monitoring for this user`);
+        }
+        
+        // If global monitoring is active, reload the ignored users list
+        if (monitorActive) {
+            await loadIgnoredUsers();
+        }
+        
+        // Redirect back to the previous page (either user detail or monitor list)
+        const referer = req.headers.referer;
+        if (referer && referer.includes('/monitor/user/')) {
+            res.redirect(`/telegram/monitor/user/${userId}`);
+        } else {
+            res.redirect('/telegram/monitor');
+        }
+    } catch (error) {
+        console.error('Error toggling user monitoring:', error);
+        req.flash('error', 'Error toggling user monitoring: ' + error.message);
+        res.redirect('/telegram/monitor');
+    }
+});
+
 router.get('/monitor/user/:id', ensureAuthenticated, async (req, res) => {
     try {
         const userId = req.params.id;
@@ -309,10 +422,17 @@ router.get('/monitor/user/:id', ensureAuthenticated, async (req, res) => {
         const content = await fs.readFile(filePath, 'utf8');
         const userData = JSON.parse(content);
         
+        // Ensure monitoringActive property exists
+        if (userData.monitoringActive === undefined) {
+            userData.monitoringActive = true;
+        }
+        
         res.render('telegram-user-messages', {
             title: 'User Messages',
             profile: userData.profile,
-            messages: userData.messages.reverse() // Show newest first
+            monitoringActive: userData.monitoringActive,
+            messages: userData.messages.reverse(), // Show newest first
+            globalMonitorActive: monitorActive
         });
     } catch (error) {
         console.error('Error retrieving user messages:', error);
@@ -330,6 +450,10 @@ router.post('/monitor/user/:id/delete', ensureAuthenticated, async (req, res) =>
         try {
             await fs.access(filePath);
             await fs.unlink(filePath);
+            
+            // Remove from ignored users if present
+            ignoredUsers.delete(userId.toString());
+            
             req.flash('success', 'User data deleted successfully');
         } catch (error) {
             req.flash('error', 'Could not delete user data: ' + error.message);

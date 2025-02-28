@@ -50,16 +50,16 @@
                 <div class="flex justify-between items-center mb-6">
                     <div>
                         <h3 class="text-lg font-semibold">
-                            Status: 
+                            Global Status: 
                             <span class="<%= monitorActive ? 'text-green-500' : 'text-red-500' %>">
                                 <%= monitorActive ? 'Active' : 'Inactive' %>
                             </span>
                         </h3>
                         <p class="text-gray-600">
                             <% if (monitorActive) { %>
-                                Monitoring is active. New private messages from users will be saved.
+                                Global monitoring is active. New private messages from users will be saved.
                             <% } else { %>
-                                Monitoring is currently inactive. No messages are being captured.
+                                Global monitoring is currently inactive. No messages are being captured.
                             <% } %>
                         </p>
                     </div>
@@ -68,13 +68,13 @@
                         <% if (monitorActive) { %>
                             <form action="/telegram/monitor/stop" method="POST">
                                 <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition">
-                                    Stop Monitoring
+                                    Stop Global Monitoring
                                 </button>
                             </form>
                         <% } else { %>
                             <form action="/telegram/monitor/start" method="POST">
                                 <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition">
-                                    Start Monitoring
+                                    Start Global Monitoring
                                 </button>
                             </form>
                         <% } %>
@@ -100,6 +100,9 @@
                                         </th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Last Message
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
                                         </th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Actions
@@ -145,10 +148,36 @@
                                                     <% } %>
                                                 </div>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm">
+                                                    <% if (user.monitoringActive) { %>
+                                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                            Active
+                                                        </span>
+                                                    <% } else { %>
+                                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                            Paused
+                                                        </span>
+                                                    <% } %>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-2">
                                                 <a href="/telegram/monitor/user/<%= user.id %>" class="text-blue-600 hover:text-blue-900">
-                                                    View Messages
+                                                    View
                                                 </a>
+                                                <span class="text-gray-300">|</span>
+                                                <form action="/telegram/monitor/user/<%= user.id %>/toggle" method="POST" class="inline">
+                                                    <input type="hidden" name="action" value="<%= user.monitoringActive ? 'stop' : 'start' %>">
+                                                    <button type="submit" class="<%= user.monitoringActive ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900' %>">
+                                                        <%= user.monitoringActive ? 'Pause' : 'Resume' %>
+                                                    </button>
+                                                </form>
+                                                <span class="text-gray-300">|</span>
+                                                <form action="/telegram/monitor/user/<%= user.id %>/delete" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete all data for this user?');">
+                                                    <button type="submit" class="text-red-600 hover:text-red-900">
+                                                        Delete
+                                                    </button>
+                                                </form>
                                             </td>
                                         </tr>
                                     <% }); %>

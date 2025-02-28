@@ -93,10 +93,17 @@ function ensureAuthenticated(req, res, next) {
     res.redirect('/login');
 }
 
+// Initialize global settings
+global.autoRespondUsers = new Set();
+global.autoRespondAll = false;
+
 // Make user data available to all views
 app.use((req, res, next) => {
     res.locals.user = req.user;
     res.locals.messages = req.flash();
+    res.locals.global = {
+        autoRespondAll: global.autoRespondAll || false
+    };
     next();
 });
 
@@ -104,11 +111,13 @@ app.use((req, res, next) => {
 const telegramRoutes = require('./routes/telegram');
 const telegramMonitorRoutes = require('./routes/telegram-monitor');
 const knowledgeBaseRoutes = require('./routes/knowledge-base');
+const ollamaChatModule = require('./routes/ollama-chat');
 
 // Use routes
 app.use('/telegram', telegramRoutes);
 app.use('/telegram', telegramMonitorRoutes);
 app.use('/knowledge-base', knowledgeBaseRoutes);
+app.use('/ollama-chat', ollamaChatModule.router);
 
 // Routes
 app.get('/', ensureAuthenticated, (req, res) => {

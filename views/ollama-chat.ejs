@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | Hexa</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-lg">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex items-center justify-between">
+                <div class="text-xl font-semibold text-gray-700">
+                    <a href="/">Hexa</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-gray-600">
+                        Welcome, <span class="font-semibold"><%= user.username %></span>
+                    </div>
+                    <a href="/profile" class="text-blue-500 hover:text-blue-700">Profile</a>
+                    <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition duration-200 ease-in-out">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="container mx-auto px-6 py-8">
+        <% if (messages.success) { %>
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                <%= messages.success %>
+            </div>
+        <% } %>
+        
+        <% if (messages.error) { %>
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <%= messages.error %>
+            </div>
+        <% } %>
+        
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Ollama Chat Manager</h1>
+            <div class="flex space-x-3">
+                <a href="/telegram/monitor" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition">
+                    Message Monitor
+                </a>
+                <a href="/knowledge-base" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition">
+                    Knowledge Base
+                </a>
+            </div>
+        </div>
+
+        <!-- Global Auto-Respond Settings -->
+        <div class="bg-white shadow rounded-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Global Auto-Respond</h2>
+            <p class="mb-4 text-gray-700">When enabled, the system will automatically reply to ALL incoming messages using the HEXA knowledge base and Ollama AI.</p>
+            
+            <div class="flex justify-between items-center">
+                <div class="text-lg font-medium">
+                    Status: 
+                    <span class="<%= global.autoRespondAll ? 'text-green-600' : 'text-red-600' %>">
+                        <%= global.autoRespondAll ? 'Active' : 'Inactive' %>
+                    </span>
+                </div>
+                
+                <div>
+                    <% if (global.autoRespondAll) { %>
+                        <form action="/ollama-chat/auto-respond/all/disable" method="POST">
+                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition">
+                                Stop Auto-Responding
+                            </button>
+                        </form>
+                    <% } else { %>
+                        <form action="/ollama-chat/auto-respond/all/enable" method="POST">
+                            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition">
+                                Start Auto-Responding
+                            </button>
+                        </form>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Message Card -->
+        <div class="bg-white shadow rounded-lg mb-8 p-6">
+            <h2 class="text-xl font-semibold mb-4">Send Test Message</h2>
+            <div id="testMessageForm">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="col-span-1">
+                        <label for="userId" class="block text-gray-700 text-sm font-bold mb-2">User ID:</label>
+                        <input type="text" id="userId" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+                    <div class="col-span-2">
+                        <label for="message" class="block text-gray-700 text-sm font-bold mb-2">Message:</label>
+                        <input type="text" id="message" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button id="sendTestBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Send Test Message
+                    </button>
+                </div>
+                
+                <div id="responseArea" class="mt-4 hidden">
+                    <div class="border-t pt-4">
+                        <h3 class="font-semibold text-gray-700 mb-2">Response:</h3>
+                        <div id="responseSource" class="text-sm text-gray-500 mb-2"></div>
+                        <div id="responseContent" class="p-3 bg-gray-50 rounded border border-gray-200 whitespace-pre-wrap"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Auto-Respond Settings -->
+        <div class="bg-white shadow rounded-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Individual User Auto-Respond Settings</h2>
+            <p class="mb-4 text-gray-700">Enable or disable automatic responses for specific users. When enabled, the system will automatically reply to messages using the HEXA knowledge base and Ollama AI.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-3">Enable Auto-Respond</h3>
+                    <form action="/ollama-chat/auto-respond/enable" method="POST">
+                        <div class="mb-4">
+                            <label for="enableUserId" class="block text-gray-700 text-sm font-bold mb-2">User ID:</label>
+                            <input type="text" id="enableUserId" name="userId" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        </div>
+                        <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Enable Auto-Respond
+                        </button>
+                    </form>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-3">Disable Auto-Respond</h3>
+                    <form action="/ollama-chat/auto-respond/disable" method="POST">
+                        <div class="mb-4">
+                            <label for="disableUserId" class="block text-gray-700 text-sm font-bold mb-2">User ID:</label>
+                            <input type="text" id="disableUserId" name="userId" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        </div>
+                        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Disable Auto-Respond
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Active Conversation States -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Active Conversations</h2>
+            
+            <% if (conversationStates && conversationStates.length > 0) { %>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    User ID
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Status
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Last Message
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Auto-Respond
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <% conversationStates.forEach(([userId, state]) => { %>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            <%= userId %>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= state.isNew ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' %>">
+                                            <%= state.isNew ? 'New Conversation' : 'Ongoing' %>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-500">
+                                            <%= new Date(state.lastMessageTime).toLocaleString() %>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <% const isAutoRespond = global.autoRespondUsers && global.autoRespondUsers.has(userId) %>
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= isAutoRespond ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
+                                            <%= isAutoRespond ? 'Enabled' : 'Disabled' %>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center space-x-2">
+                                        <button onclick="document.getElementById('userId').value='<%= userId %>'" class="text-blue-600 hover:text-blue-900">
+                                            Reply
+                                        </button>
+                                        <% if (isAutoRespond) { %>
+                                            <form action="/ollama-chat/auto-respond/disable" method="POST" class="inline">
+                                                <input type="hidden" name="userId" value="<%= userId %>">
+                                                <button type="submit" class="text-red-600 hover:text-red-900">
+                                                    Disable Auto
+                                                </button>
+                                            </form>
+                                        <% } else { %>
+                                            <form action="/ollama-chat/auto-respond/enable" method="POST" class="inline">
+                                                <input type="hidden" name="userId" value="<%= userId %>">
+                                                <button type="submit" class="text-green-600 hover:text-green-900">
+                                                    Enable Auto
+                                                </button>
+                                            </form>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } else { %>
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700">
+                                No active conversations found. When users message you, their conversations will appear here.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+    </div>
+    
+    <!-- JavaScript for test message functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sendTestBtn = document.getElementById('sendTestBtn');
+            const responseArea = document.getElementById('responseArea');
+            const responseContent = document.getElementById('responseContent');
+            const responseSource = document.getElementById('responseSource');
+            
+            sendTestBtn.addEventListener('click', async function() {
+                const userId = document.getElementById('userId').value.trim();
+                const message = document.getElementById('message').value.trim();
+                
+                if (!userId || !message) {
+                    alert('Please enter both User ID and Message');
+                    return;
+                }
+                
+                // Show loading state
+                sendTestBtn.disabled = true;
+                sendTestBtn.innerText = 'Sending...';
+                
+                try {
+                    const response = await fetch('/ollama-chat/send', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ userId, message }),
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        responseContent.innerText = result.response;
+                        
+                        // Set source label
+                        let sourceLabel = '';
+                        switch (result.source) {
+                            case 'knowledge-base':
+                                sourceLabel = 'Source: Knowledge Base (exact match)';
+                                break;
+                            case 'ollama':
+                                sourceLabel = 'Source: Ollama AI';
+                                break;
+                            case 'welcome':
+                                sourceLabel = 'Source: Welcome Message';
+                                break;
+                            default:
+                                sourceLabel = 'Source: System';
+                        }
+                        
+                        responseSource.innerText = sourceLabel;
+                        responseArea.classList.remove('hidden');
+                    } else {
+                        alert('Error: ' + (result.error || 'Failed to send message'));
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                } finally {
+                    // Reset button state
+                    sendTestBtn.disabled = false;
+                    sendTestBtn.innerText = 'Send Test Message';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

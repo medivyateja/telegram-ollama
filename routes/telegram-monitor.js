@@ -21,6 +21,9 @@ let ignoredUsers = new Set();
 // Get the user's own phone number from environment variables
 const OWN_PHONE_NUMBER = process.env.TELEGRAM_PHONE;
 
+// Import Ollama chat handler (will be loaded after app starts)
+let ollamaHandler = null;
+
 // Data directory for storing user messages
 const DATA_DIR = path.join(__dirname, '..', 'public', 'data');
 
@@ -51,6 +54,10 @@ async function initializeClient() {
     });
 
     await client.connect();
+    
+    // Store client in global state for other modules
+    global.telegramClient = client;
+    
     return client;
 }
 
@@ -170,6 +177,25 @@ async function saveUserMessage(sender, message) {
     // Save the updated data
     await fs.writeFile(filePath, JSON.stringify(userData, null, 2), 'utf8');
     console.log(`Saved message from user ${sender.id} (${sender.firstName || ''} ${sender.lastName || ''})`);
+    
+    // Forward to Ollama handler if available and auto-respond is enabled
+    try {
+        // Try to load the handler if it's not loaded yet
+        if (!ollamaHandler) {
+            try {
+                ollamaHandler = require('./ollama-chat').handleNewMessage;
+            } catch (error) {
+                console.log('Ollama chat handler not available yet');
+            }
+        }
+        
+        // Forward the message if handler is available
+        if (ollamaHandler) {
+            await ollamaHandler(sender, message);
+        }
+    } catch (error) {
+        console.error('Error forwarding message to Ollama handler:', error);
+    }
 }
 
 // Load ignored users from data files
@@ -312,10 +338,15 @@ router.get('/monitor', ensureAuthenticated, async (req, res) => {
         try {
             const files = await fs.readdir(DATA_DIR);
             for (const file of files) {
-                if (file.endsWith('.json')) {
+                if (file.endsWith('.json') && !file.includes('knowledge-base')) {
                     const filePath = path.join(DATA_DIR, file);
                     const content = await fs.readFile(filePath, 'utf8');
                     const userData = JSON.parse(content);
+                    
+                    // Skip non-user files
+                    if (!userData.profile || !userData.messages) {
+                        continue;
+                    }
                     
                     // Ensure monitoringActive property exists
                     if (userData.monitoringActive === undefined) {
@@ -427,12 +458,17 @@ router.get('/monitor/user/:id', ensureAuthenticated, async (req, res) => {
             userData.monitoringActive = true;
         }
         
+        // Check if user has auto-respond enabled
+        const autoRespondEnabled = global.autoRespondUsers && 
+                                 global.autoRespondUsers.has(userId.toString());
+        
         res.render('telegram-user-messages', {
             title: 'User Messages',
             profile: userData.profile,
             monitoringActive: userData.monitoringActive,
             messages: userData.messages.reverse(), // Show newest first
-            globalMonitorActive: monitorActive
+            globalMonitorActive: monitorActive,
+            autoRespondEnabled: autoRespondEnabled || false
         });
     } catch (error) {
         console.error('Error retrieving user messages:', error);
@@ -453,6 +489,11 @@ router.post('/monitor/user/:id/delete', ensureAuthenticated, async (req, res) =>
             
             // Remove from ignored users if present
             ignoredUsers.delete(userId.toString());
+            
+            // Remove from auto-respond list if present
+            if (global.autoRespondUsers) {
+                global.autoRespondUsers.delete(userId.toString());
+            }
             
             req.flash('success', 'User data deleted successfully');
         } catch (error) {

@@ -145,6 +145,30 @@
                     </div>
                 </div>
             </div>
+        
+        <!-- Add this to the Knowledge Base Card in index.ejs -->
+<div class="mt-4 flex justify-between items-center border-t pt-4">
+    <div>
+        <span class="font-medium">Auto-Respond:</span>
+        <span class="<%= global.autoRespondAll ? 'text-green-600' : 'text-red-600' %> font-bold ml-2">
+            <%= global.autoRespondAll ? 'Active' : 'Inactive' %>
+        </span>
+    </div>
+    
+    <% if (global.autoRespondAll) { %>
+        <form action="/ollama-chat/auto-respond/all/disable" method="POST">
+            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
+                Stop
+            </button>
+        </form>
+    <% } else { %>
+        <form action="/ollama-chat/auto-respond/all/enable" method="POST">
+            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">
+                Start
+            </button>
+        </form>
+    <% } %>
+</div>
         </div>
     </div>
 </body>

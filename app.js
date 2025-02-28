@@ -100,13 +100,15 @@ app.use((req, res, next) => {
     next();
 });
 
-// Import Telegram routes
+// Import routes
 const telegramRoutes = require('./routes/telegram');
 const telegramMonitorRoutes = require('./routes/telegram-monitor');
+const knowledgeBaseRoutes = require('./routes/knowledge-base');
 
-// Use Telegram routes
+// Use routes
 app.use('/telegram', telegramRoutes);
 app.use('/telegram', telegramMonitorRoutes);
+app.use('/knowledge-base', knowledgeBaseRoutes);
 
 // Routes
 app.get('/', ensureAuthenticated, (req, res) => {

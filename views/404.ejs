@@ -3,32 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> | Hexa</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <title><%= title %> | HEXA EA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'hexa-purple': '#8474e3',
+                        'hexa-purple-dark': '#6557c2',
+                        'hexa-purple-light': '#a391ea',
+                        'hexa-purple-bg': '#f3f0ff'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-hexa-purple-bg min-h-screen">
     <!-- Navigation Bar -->
     <nav class="bg-white shadow-lg">
-        <div class="container mx-auto px-6 py-3">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div class="flex items-center justify-between">
-                <div class="text-xl font-semibold text-gray-700">
-                    <a href="/">Hexa</a>
+                <div class="flex items-center">
+                    <div class="bg-hexa-purple p-2 rounded-lg mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 100 100">
+                            <polygon points="50,10 85,30 85,70 50,90 15,70 15,30" stroke="white" stroke-width="5" fill="none" />
+                            <text x="36" y="65" font-size="40" font-weight="bold" fill="white">H</text>
+                        </svg>
+                    </div>
+                    <div class="text-xl font-bold text-hexa-purple">
+                        <a href="/">HEXA EA</a>
+                    </div>
                 </div>
                 <% if (user) { %>
                 <div class="flex items-center space-x-4">
-                    <div class="text-gray-600">
-                        Welcome, <span class="font-semibold"><%= user.username %></span>
+                    <div class="text-gray-600 hidden sm:block">
+                        Welcome, <span class="font-semibold text-hexa-purple"><%= user.username %></span>
                     </div>
-                    <a href="/profile" class="text-blue-500 hover:text-blue-700">Profile</a>
-                    <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition duration-200 ease-in-out">
-                        Logout
+                    <a href="/profile" class="text-hexa-purple hover:text-hexa-purple-dark transition">
+                        <i class="fas fa-user-circle mr-1"></i> Profile
+                    </a>
+                    <a href="/logout" class="bg-gradient-to-r from-hexa-purple to-hexa-purple-light hover:from-hexa-purple-dark hover:to-hexa-purple text-white px-4 py-2 rounded-lg transition duration-200 ease-in-out">
+                        <i class="fas fa-sign-out-alt mr-1"></i> Logout
                     </a>
                 </div>
                 <% } else { %>
                 <div>
-                    <a href="/login" class="text-blue-500 hover:text-blue-700 mr-3">Login</a>
-                    <a href="/signup" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition duration-200 ease-in-out">
-                        Sign Up
+                    <a href="/login" class="text-hexa-purple hover:text-hexa-purple-dark mr-3 transition">
+                        <i class="fas fa-sign-in-alt mr-1"></i> Login
+                    </a>
+                    <a href="/signup" class="bg-gradient-to-r from-hexa-purple to-hexa-purple-light hover:from-hexa-purple-dark hover:to-hexa-purple text-white px-4 py-2 rounded-lg transition duration-200 ease-in-out">
+                        <i class="fas fa-user-plus mr-1"></i> Sign Up
                     </a>
                 </div>
                 <% } %>
@@ -38,13 +65,18 @@
 
     <!-- Content -->
     <div class="container mx-auto px-6 py-8 flex items-center justify-center min-h-[80vh]">
-        <div class="text-center">
-            <h1 class="text-6xl font-bold text-gray-800 mb-4">404</h1>
-            <p class="text-xl text-gray-600 mb-8">Page Not Found</p>
+        <div class="text-center bg-white p-10 rounded-xl shadow-md max-w-md">
+            <div class="w-24 h-24 mx-auto bg-hexa-purple-bg rounded-full flex items-center justify-center mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-hexa-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h1 class="text-6xl font-bold text-hexa-purple mb-4">404</h1>
+            <p class="text-xl text-gray-600 mb-4">Page Not Found</p>
             <p class="text-gray-500 mb-8">The page you are looking for doesn't exist or has been moved.</p>
             <div>
-                <a href="/" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition duration-200 ease-in-out">
-                    Go Home
+                <a href="/" class="bg-gradient-to-r from-hexa-purple to-hexa-purple-light hover:from-hexa-purple-dark hover:to-hexa-purple text-white px-6 py-3 rounded-lg transition duration-200 ease-in-out inline-flex items-center">
+                    <i class="fas fa-home mr-2"></i> Go Home
                 </a>
             </div>
         </div>

@@ -3,24 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> | Hexa</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <title><%= title %> | HEXA EA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'hexa-purple': '#8474e3',
+                        'hexa-purple-dark': '#6557c2',
+                        'hexa-purple-light': '#a391ea',
+                        'hexa-purple-bg': '#f3f0ff'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-hexa-purple-bg min-h-screen">
     <!-- Navigation Bar -->
-    <nav class="bg-white shadow-lg">
-        <div class="container mx-auto px-6 py-3">
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div class="flex items-center justify-between">
-                <div class="text-xl font-semibold text-gray-700">
-                    <a href="/">Hexa</a>
+                <div class="flex items-center">
+                    <div class="bg-hexa-purple p-2 rounded-lg mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 100 100">
+                            <polygon points="50,10 85,30 85,70 50,90 15,70 15,30" stroke="white" stroke-width="5" fill="none" />
+                            <text x="36" y="65" font-size="40" font-weight="bold" fill="white">H</text>
+                        </svg>
+                    </div>
+                    <div class="text-xl font-bold text-hexa-purple">
+                        <a href="/">HEXA EA</a>
+                    </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <div class="text-gray-600">
-                        Welcome, <span class="font-semibold"><%= user.username %></span>
+                    <div class="text-gray-600 hidden sm:block">
+                        Welcome, <span class="font-semibold text-hexa-purple"><%= user.username %></span>
                     </div>
-                    <a href="/profile" class="text-blue-500 hover:text-blue-700">Profile</a>
-                    <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition duration-200 ease-in-out">
-                        Logout
+                    <a href="/profile" class="text-hexa-purple hover:text-hexa-purple-dark transition">
+                        <i class="fas fa-user-circle mr-1"></i> Profile
+                    </a>
+                    <a href="/logout" class="bg-gradient-to-r from-hexa-purple to-hexa-purple-light hover:from-hexa-purple-dark hover:to-hexa-purple text-white px-4 py-2 rounded-lg transition duration-200 ease-in-out">
+                        <i class="fas fa-sign-out-alt mr-1"></i> Logout
                     </a>
                 </div>
             </div>
@@ -28,47 +53,56 @@
     </nav>
 
     <!-- Content -->
-    <div class="container mx-auto px-6 py-8">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <% if (messages.error) { %>
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                <%= messages.error %>
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg mb-6 shadow-md">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle mr-3 text-red-500"></i>
+                    <%= messages.error %>
+                </div>
             </div>
         <% } %>
         
         <div class="mb-6">
-            <a href="/knowledge-base" class="flex items-center text-blue-500 hover:text-blue-700 font-medium">
-                <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L4.414 9H17a1 1 0 110 2H4.414l5.293 5.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-                </svg>
+            <a href="/knowledge-base" class="flex items-center text-hexa-purple hover:text-hexa-purple-dark font-medium">
+                <i class="fas fa-arrow-left mr-2"></i>
                 Back to Knowledge Base
             </a>
         </div>
         
-        <div class="bg-white shadow rounded-lg p-6">
-            <h1 class="text-2xl font-bold mb-6">Edit Knowledge Base Entry</h1>
+        <div class="bg-white shadow-md rounded-xl p-6">
+            <h1 class="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                <i class="fas fa-edit text-hexa-purple mr-2"></i> Edit Knowledge Base Entry
+            </h1>
             
             <form action="/knowledge-base/update/<%= entry.id %>" method="POST">
                 <div class="mb-4">
-                    <label for="answer" class="block text-gray-700 text-sm font-bold mb-2">Answer:</label>
-                    <textarea id="answer" name="answer" rows="6" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required><%= entry.answer %></textarea>
+                    <label for="answer" class="block text-gray-700 text-sm font-bold mb-2 flex items-center">
+                        <i class="fas fa-comment-dots text-hexa-purple mr-2"></i> Answer:
+                    </label>
+                    <textarea id="answer" name="answer" rows="6" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-hexa-purple focus:border-transparent transition" required><%= entry.answer %></textarea>
                 </div>
                 
                 <div class="mb-4">
-                    <label for="questions" class="block text-gray-700 text-sm font-bold mb-2">Questions (one per line):</label>
-                    <textarea id="questions" name="questions" rows="8" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required><%= entry.questions.join('\n') %></textarea>
+                    <label for="questions" class="block text-gray-700 text-sm font-bold mb-2 flex items-center">
+                        <i class="fas fa-question-circle text-hexa-purple mr-2"></i> Questions (one per line):
+                    </label>
+                    <textarea id="questions" name="questions" rows="8" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-hexa-purple focus:border-transparent transition" required><%= entry.questions.join('\n') %></textarea>
                 </div>
                 
                 <div class="mb-6">
-                    <label for="keywords" class="block text-gray-700 text-sm font-bold mb-2">Keywords (comma separated):</label>
-                    <input type="text" id="keywords" name="keywords" value="<%= entry.keywords ? entry.keywords.join(', ') : '' %>" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <label for="keywords" class="block text-gray-700 text-sm font-bold mb-2 flex items-center">
+                        <i class="fas fa-tags text-hexa-purple mr-2"></i> Keywords (comma separated):
+                    </label>
+                    <input type="text" id="keywords" name="keywords" value="<%= entry.keywords ? entry.keywords.join(', ') : '' %>" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-hexa-purple focus:border-transparent transition">
                 </div>
                 
                 <div class="flex justify-end space-x-4">
-                    <a href="/knowledge-base" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
-                        Cancel
+                    <a href="/knowledge-base" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition flex items-center">
+                        <i class="fas fa-times mr-2"></i> Cancel
                     </a>
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
-                        Update Entry
+                    <button type="submit" class="bg-hexa-purple hover:bg-hexa-purple-dark text-white font-bold py-2 px-4 rounded-lg transition flex items-center">
+                        <i class="fas fa-save mr-2"></i> Update Entry
                     </button>
                 </div>
             </form>

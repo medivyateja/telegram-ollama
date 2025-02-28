@@ -3,24 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> | Hexa</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <title><%= title %> | HEXA EA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'hexa-purple': '#8474e3',
+                        'hexa-purple-dark': '#6557c2',
+                        'hexa-purple-light': '#a391ea',
+                        'hexa-purple-bg': '#f3f0ff'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-hexa-purple-bg min-h-screen">
     <!-- Navigation Bar -->
-    <nav class="bg-white shadow-lg">
-        <div class="container mx-auto px-6 py-3">
+    <nav class="bg-white shadow-lg sticky top-0 z-10">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div class="flex items-center justify-between">
-                <div class="text-xl font-semibold text-gray-700">
-                    <a href="/">Hexa</a>
+                <div class="flex items-center">
+                    <div class="bg-hexa-purple p-2 rounded-lg mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 100 100">
+                            <polygon points="50,10 85,30 85,70 50,90 15,70 15,30" stroke="white" stroke-width="5" fill="none" />
+                            <text x="36" y="65" font-size="40" font-weight="bold" fill="white">H</text>
+                        </svg>
+                    </div>
+                    <div class="text-xl font-bold text-hexa-purple">
+                        <a href="/">HEXA EA</a>
+                    </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <div class="text-gray-600">
-                        Welcome, <span class="font-semibold"><%= user.username %></span>
+                    <div class="text-gray-600 hidden sm:block">
+                        Welcome, <span class="font-semibold text-hexa-purple"><%= user.username %></span>
                     </div>
-                    <a href="/profile" class="text-blue-500 hover:text-blue-700">Profile</a>
-                    <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition duration-200 ease-in-out">
-                        Logout
+                    <a href="/profile" class="text-hexa-purple hover:text-hexa-purple-dark transition">
+                        <i class="fas fa-user-circle mr-1"></i> Profile
+                    </a>
+                    <a href="/logout" class="bg-gradient-to-r from-hexa-purple to-hexa-purple-light hover:from-hexa-purple-dark hover:to-hexa-purple text-white px-4 py-2 rounded-lg transition duration-200 ease-in-out">
+                        <i class="fas fa-sign-out-alt mr-1"></i> Logout
                     </a>
                 </div>
             </div>
@@ -28,148 +53,173 @@
     </nav>
 
     <!-- Content -->
-    <div class="container mx-auto px-6 py-8">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <% if (messages.success) { %>
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                <%= messages.success %>
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg mb-6 shadow-md">
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle mr-3 text-green-500"></i>
+                    <%= messages.success %>
+                </div>
             </div>
         <% } %>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Top Row Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <!-- Welcome Card -->
-            <div class="bg-white shadow rounded-lg p-6">
-                <h2 class="text-2xl font-bold mb-4">Welcome to Hexa</h2>
-                <p class="mb-4">Your secure dashboard with integrated services.</p>
-                <a href="/profile" class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition">
-                    View Profile
-                </a>
+            <div class="bg-white shadow-md rounded-xl p-6 border-t-4 border-hexa-purple transform transition duration-300 hover:shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">Welcome to <span class="text-hexa-purple">HEXA EA</span></h2>
+                <p class="mb-4 text-gray-600">Your secure dashboard with integrated trading and analytics services.</p>
+                <div class="flex items-center mt-4">
+                    <a href="/profile" class="inline-block bg-hexa-purple hover:bg-hexa-purple-dark text-white px-4 py-2 rounded-lg transition duration-200">
+                        <i class="fas fa-user mr-2"></i> View Profile
+                    </a>
+                    <div class="ml-4 px-3 py-1 bg-hexa-purple-bg text-hexa-purple-dark rounded-lg">
+                        <i class="fas fa-shield-alt mr-1"></i> Secure Access
+                    </div>
+                </div>
             </div>
             
             <!-- Telegram Status Card -->
-            <div class="bg-white shadow rounded-lg p-6">
-                <h2 class="text-2xl font-bold mb-4">Telegram Status</h2>
+            <div class="bg-white shadow-md rounded-xl p-6 transform transition duration-300 hover:shadow-lg relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 -mt-10 -mr-10 bg-hexa-purple-light rounded-full opacity-10"></div>
+                <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center">
+                    <i class="fab fa-telegram text-hexa-purple mr-2"></i> Telegram Status
+                </h2>
                 
                 <% if (user.telegramConnected) { %>
                     <div class="flex items-center mb-4">
-                        <div class="w-10 h-10 flex items-center justify-center bg-green-500 text-white rounded-full mr-4">
-                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
+                        <div class="w-10 h-10 flex items-center justify-center bg-green-500 text-white rounded-full mr-4 shadow-md">
+                            <i class="fas fa-check"></i>
                         </div>
                         <div>
-                            <h3 class="font-semibold">Connected</h3>
-                            <p class="text-sm text-gray-600">Your Telegram account is linked</p>
+                            <h3 class="font-semibold text-gray-800">Connected</h3>
+                            <p class="text-sm text-gray-600">Your Telegram account is linked and active</p>
                         </div>
                     </div>
-                    <div class="flex space-x-2">
-                        <a href="/telegram/connect" class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition">
-                            Manage Connection
+                    <div class="flex flex-wrap gap-2">
+                        <a href="/telegram/connect" class="inline-block bg-hexa-purple hover:bg-hexa-purple-dark text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-cog mr-1"></i> Manage
                         </a>
-                        <a href="/telegram/monitor" class="inline-block bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded transition">
-                            Message Monitor
+                        <a href="/telegram/monitor" class="inline-block bg-gradient-to-r from-hexa-purple to-hexa-purple-light hover:from-hexa-purple-dark hover:to-hexa-purple text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-desktop mr-1"></i> Message Monitor
                         </a>
                     </div>
                 <% } else { %>
                     <div class="flex items-center mb-4">
-                        <div class="w-10 h-10 flex items-center justify-center bg-yellow-500 text-white rounded-full mr-4">
-                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
+                        <div class="w-10 h-10 flex items-center justify-center bg-yellow-500 text-white rounded-full mr-4 shadow-md">
+                            <i class="fas fa-exclamation-triangle"></i>
                         </div>
                         <div>
-                            <h3 class="font-semibold">Not Connected</h3>
+                            <h3 class="font-semibold text-gray-800">Not Connected</h3>
                             <p class="text-sm text-gray-600">Connect your Telegram account (Phone: <%= process.env.TELEGRAM_PHONE %>)</p>
                         </div>
                     </div>
-                    <a href="/telegram/connect" class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition">
-                        Connect Telegram
+                    <a href="/telegram/connect" class="inline-block bg-hexa-purple hover:bg-hexa-purple-dark text-white px-4 py-2 rounded-lg transition">
+                        <i class="fab fa-telegram mr-1"></i> Connect Telegram
                     </a>
                 <% } %>
             </div>
         </div>
         
         <!-- Service Cards Row -->
-        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Message Monitor Card -->
-            <div class="bg-white shadow rounded-lg p-6">
+            <div class="bg-white shadow-md rounded-xl p-6 transform transition duration-300 hover:shadow-lg border-l-4 border-hexa-purple">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-2xl font-bold">Message Monitor</h2>
-                    <a href="/telegram/monitor" class="inline-block bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded transition">
-                        Open Monitor
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-comment-dots text-hexa-purple mr-2"></i> Message Monitor
+                    </h2>
+                    <a href="/telegram/monitor" class="inline-block bg-hexa-purple hover:bg-hexa-purple-dark text-white px-4 py-2 rounded-lg transition text-sm">
+                        <i class="fas fa-external-link-alt mr-1"></i> Open Monitor
                     </a>
                 </div>
                 
-                <div class="flex items-center space-x-2 text-gray-700">
-                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p>Track private messages from individual Telegram users.</p>
+                <div class="flex items-start space-x-2 text-gray-700 mb-4">
+                    <i class="fas fa-info-circle text-hexa-purple mt-1 flex-shrink-0"></i>
+                    <p>Track private messages from individual Telegram users and manage automated responses.</p>
                 </div>
                 
-                <div class="mt-4 grid grid-cols-2 gap-4">
-                    <div class="bg-gray-50 rounded p-4 text-center">
-                        <span class="block text-lg font-bold text-indigo-600">Individual Profiles</span>
-                        <span class="text-gray-500">Track user data</span>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="bg-hexa-purple-bg rounded-lg p-4 text-center transform transition duration-300 hover:scale-105">
+                        <i class="fas fa-user-friends text-hexa-purple text-2xl mb-2"></i>
+                        <span class="block text-lg font-bold text-hexa-purple">Individual Profiles</span>
+                        <span class="text-gray-600 text-sm">Track user data</span>
                     </div>
-                    <div class="bg-gray-50 rounded p-4 text-center">
-                        <span class="block text-lg font-bold text-indigo-600">Message History</span>
-                        <span class="text-gray-500">Store conversations</span>
+                    <div class="bg-hexa-purple-bg rounded-lg p-4 text-center transform transition duration-300 hover:scale-105">
+                        <i class="fas fa-history text-hexa-purple text-2xl mb-2"></i>
+                        <span class="block text-lg font-bold text-hexa-purple">Message History</span>
+                        <span class="text-gray-600 text-sm">Store conversations</span>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    <div class="flex items-center">
+                        <i class="fas fa-robot text-hexa-purple mr-2"></i>
+                        <span class="font-medium text-gray-700">Trading signals monitoring active</span>
                     </div>
                 </div>
             </div>
             
             <!-- Knowledge Base Card -->
-            <div class="bg-white shadow rounded-lg p-6">
+            <div class="bg-white shadow-md rounded-xl p-6 transform transition duration-300 hover:shadow-lg border-l-4 border-hexa-purple">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-2xl font-bold">Knowledge Base</h2>
-                    <a href="/knowledge-base" class="inline-block bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded transition">
-                        Open KB
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-book text-hexa-purple mr-2"></i> Knowledge Base
+                    </h2>
+                    <a href="/knowledge-base" class="inline-block bg-hexa-purple hover:bg-hexa-purple-dark text-white px-4 py-2 rounded-lg transition text-sm">
+                        <i class="fas fa-external-link-alt mr-1"></i> Open KB
                     </a>
                 </div>
                 
-                <div class="flex items-center space-x-2 text-gray-700">
-                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                    <p>Manage answers to frequently asked questions.</p>
+                <div class="flex items-start space-x-2 text-gray-700 mb-4">
+                    <i class="fas fa-lightbulb text-hexa-purple mt-1 flex-shrink-0"></i>
+                    <p>Manage answers to frequently asked questions and automated trading insights.</p>
                 </div>
                 
-                <div class="mt-4 grid grid-cols-2 gap-4">
-                    <div class="bg-gray-50 rounded p-4 text-center">
-                        <span class="block text-lg font-bold text-purple-600">Q&A Entries</span>
-                        <span class="text-gray-500">Store common answers</span>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="bg-hexa-purple-bg rounded-lg p-4 text-center transform transition duration-300 hover:scale-105">
+                        <i class="fas fa-question-circle text-hexa-purple text-2xl mb-2"></i>
+                        <span class="block text-lg font-bold text-hexa-purple">Q&A Entries</span>
+                        <span class="text-gray-600 text-sm">Store common answers</span>
                     </div>
-                    <div class="bg-gray-50 rounded p-4 text-center">
-                        <span class="block text-lg font-bold text-purple-600">Smart Matching</span>
-                        <span class="text-gray-500">Find by keywords</span>
+                    <div class="bg-hexa-purple-bg rounded-lg p-4 text-center transform transition duration-300 hover:scale-105">
+                        <i class="fas fa-search text-hexa-purple text-2xl mb-2"></i>
+                        <span class="block text-lg font-bold text-hexa-purple">Smart Matching</span>
+                        <span class="text-gray-600 text-sm">Find by keywords</span>
                     </div>
                 </div>
+                
+                <div class="flex justify-between items-center border-t pt-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-exchange-alt text-hexa-purple mr-2"></i>
+                        <span class="font-medium text-gray-700">Auto-Respond:</span>
+                        <span class="<%= global.autoRespondAll ? 'text-green-600' : 'text-red-600' %> font-bold ml-2">
+                            <%= global.autoRespondAll ? 'Active' : 'Inactive' %>
+                        </span>
+                    </div>
+                    
+                    <% if (global.autoRespondAll) { %>
+                        <form action="/ollama-chat/auto-respond/all/disable" method="POST">
+                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm transition">
+                                <i class="fas fa-stop-circle mr-1"></i> Stop
+                            </button>
+                        </form>
+                    <% } else { %>
+                        <form action="/ollama-chat/auto-respond/all/enable" method="POST">
+                            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm transition">
+                                <i class="fas fa-play-circle mr-1"></i> Start
+                            </button>
+                        </form>
+                    <% } %>
+                </div>
             </div>
+        </div>
         
-        <!-- Add this to the Knowledge Base Card in index.ejs -->
-<div class="mt-4 flex justify-between items-center border-t pt-4">
-    <div>
-        <span class="font-medium">Auto-Respond:</span>
-        <span class="<%= global.autoRespondAll ? 'text-green-600' : 'text-red-600' %> font-bold ml-2">
-            <%= global.autoRespondAll ? 'Active' : 'Inactive' %>
-        </span>
+        <!-- Analytics Summary -->
+        
     </div>
     
-    <% if (global.autoRespondAll) { %>
-        <form action="/ollama-chat/auto-respond/all/disable" method="POST">
-            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
-                Stop
-            </button>
-        </form>
-    <% } else { %>
-        <form action="/ollama-chat/auto-respond/all/enable" method="POST">
-            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">
-                Start
-            </button>
-        </form>
-    <% } %>
-</div>
-        </div>
-    </div>
+    <!-- Footer -->
+    
 </body>
 </html>

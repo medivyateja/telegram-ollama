@@ -69,26 +69,36 @@
         </div>
 
         <!-- Global Auto-Respond Settings -->
-        <div class="bg-white shadow-md rounded-xl p-6 border border-gray-200">
+        <div class="bg-white shadow-md rounded-xl p-6 mb-8 border-t-4 border-hexa-purple">
             <h2 class="text-xl font-semibold mb-4 flex items-center">
                 <i class="fas fa-globe text-hexa-purple mr-2"></i> Global Auto-Respond
             </h2>
             <p class="mb-4 text-gray-700">When enabled, the system will automatically reply to ALL incoming messages using the HEXA knowledge base and Ollama AI.</p>
             
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <div class="text-lg font-medium">Status:</div>
-                    <div class="ml-2 flex items-center">
-                        <i class="fas fa-check-circle text-green-500 mr-1"></i>
-                        <span class="font-semibold text-green-600">Active</span>
-                    </div>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div class="text-lg font-medium flex items-center">
+                    Status: 
+                    <span class="<%= global.autoRespondAll ? 'text-green-600 flex items-center' : 'text-red-600 flex items-center' %> ml-2">
+                        <i class="<%= global.autoRespondAll ? 'fas fa-check-circle' : 'fas fa-times-circle' %> mr-1"></i>
+                        <%= global.autoRespondAll ? 'Active' : 'Inactive' %>
+                    </span>
                 </div>
                 
-                <form action="/ollama-chat/auto-respond/all/disable" method="POST">
-                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition flex items-center">
-                        <i class="fas fa-stop-circle mr-2"></i> Stop Auto-Responding
-                    </button>
-                </form>
+                <div>
+                    <% if (global.autoRespondAll) { %>
+                        <form action="/ollama-chat/auto-respond/all/disable" method="POST">
+                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition flex items-center">
+                                <i class="fas fa-stop-circle mr-2"></i> Stop Auto-Responding
+                            </button>
+                        </form>
+                    <% } else { %>
+                        <form action="/ollama-chat/auto-respond/all/enable" method="POST">
+                            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition flex items-center">
+                                <i class="fas fa-play-circle mr-2"></i> Start Auto-Responding
+                            </button>
+                        </form>
+                    <% } %>
+                </div>
             </div>
         </div>
     </div>

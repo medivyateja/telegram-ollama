@@ -23,7 +23,7 @@
 </head>
 <body class="bg-hexa-purple-bg min-h-screen">
     <!-- Navigation Bar -->
-    <nav class="bg-white shadow-lg sticky top-0 z-10">
+    <nav class="bg-white shadow-lg sticky top-0 z-10 border-b border-gray-200">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
@@ -38,8 +38,8 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <div class="text-gray-600 hidden sm:block">
-                        Welcome, <span class="font-semibold text-hexa-purple"><%= user.username %></span>
+                    <div class="text-gray-600">
+                        Welcome, <span class="font-semibold text-hexa-purple">admin</span>
                     </div>
                     <a href="/profile" class="text-hexa-purple hover:text-hexa-purple-dark transition">
                         <i class="fas fa-user-circle mr-1"></i> Profile
@@ -54,24 +54,6 @@
 
     <!-- Content -->
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <% if (messages.success) { %>
-            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg mb-6 shadow-md">
-                <div class="flex items-center">
-                    <i class="fas fa-check-circle mr-3 text-green-500"></i>
-                    <%= messages.success %>
-                </div>
-            </div>
-        <% } %>
-        
-        <% if (messages.error) { %>
-            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg mb-6 shadow-md">
-                <div class="flex items-center">
-                    <i class="fas fa-exclamation-circle mr-3 text-red-500"></i>
-                    <%= messages.error %>
-                </div>
-            </div>
-        <% } %>
-        
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
             <h1 class="text-2xl font-bold text-gray-800 flex items-center">
                 <i class="fas fa-robot text-hexa-purple mr-2"></i> Ollama Chat Manager
@@ -87,290 +69,28 @@
         </div>
 
         <!-- Global Auto-Respond Settings -->
-        <div class="bg-white shadow-md rounded-xl p-6 mb-8 border-t-4 border-hexa-purple">
+        <div class="bg-white shadow-md rounded-xl p-6 border border-gray-200">
             <h2 class="text-xl font-semibold mb-4 flex items-center">
                 <i class="fas fa-globe text-hexa-purple mr-2"></i> Global Auto-Respond
             </h2>
             <p class="mb-4 text-gray-700">When enabled, the system will automatically reply to ALL incoming messages using the HEXA knowledge base and Ollama AI.</p>
             
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div class="text-lg font-medium flex items-center">
-                    Status: 
-                    <span class="<%= global.autoRespondAll ? 'text-green-600 flex items-center' : 'text-red-600 flex items-center' %> ml-2">
-                        <i class="<%= global.autoRespondAll ? 'fas fa-check-circle' : 'fas fa-times-circle' %> mr-1"></i>
-                        <%= global.autoRespondAll ? 'Active' : 'Inactive' %>
-                    </span>
-                </div>
-                
-                <div>
-                    <% if (global.autoRespondAll) { %>
-                        <form action="/ollama-chat/auto-respond/all/disable" method="POST">
-                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition flex items-center">
-                                <i class="fas fa-stop-circle mr-2"></i> Stop Auto-Responding
-                            </button>
-                        </form>
-                    <% } else { %>
-                        <form action="/ollama-chat/auto-respond/all/enable" method="POST">
-                            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition flex items-center">
-                                <i class="fas fa-play-circle mr-2"></i> Start Auto-Responding
-                            </button>
-                        </form>
-                    <% } %>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Test Message Card -->
-        <div class="bg-white shadow-md rounded-xl mb-8 p-6 border-l-4 border-hexa-purple">
-            <h2 class="text-xl font-semibold mb-4 flex items-center">
-                <i class="fas fa-paper-plane text-hexa-purple mr-2"></i> Send Test Message
-            </h2>
-            <div id="testMessageForm">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div class="col-span-1">
-                        <label for="userId" class="block text-gray-700 text-sm font-bold mb-2 flex items-center">
-                            <i class="fas fa-user text-hexa-purple mr-1"></i> User ID:
-                        </label>
-                        <input type="text" id="userId" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-hexa-purple focus:border-transparent transition" required>
-                    </div>
-                    <div class="col-span-2">
-                        <label for="message" class="block text-gray-700 text-sm font-bold mb-2 flex items-center">
-                            <i class="fas fa-comment text-hexa-purple mr-1"></i> Message:
-                        </label>
-                        <input type="text" id="message" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-hexa-purple focus:border-transparent transition" required>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="text-lg font-medium">Status:</div>
+                    <div class="ml-2 flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-1"></i>
+                        <span class="font-semibold text-green-600">Active</span>
                     </div>
                 </div>
                 
-                <div class="flex justify-end">
-                    <button id="sendTestBtn" class="bg-hexa-purple hover:bg-hexa-purple-dark text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-hexa-purple-light focus:ring-offset-2 transition flex items-center">
-                        <i class="fas fa-paper-plane mr-2"></i> Send Test Message
+                <form action="/ollama-chat/auto-respond/all/disable" method="POST">
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition flex items-center">
+                        <i class="fas fa-stop-circle mr-2"></i> Stop Auto-Responding
                     </button>
-                </div>
-                
-                <div id="responseArea" class="mt-4 hidden">
-                    <div class="border-t pt-4">
-                        <h3 class="font-semibold text-gray-700 mb-2 flex items-center">
-                            <i class="fas fa-reply text-hexa-purple mr-2"></i> Response:
-                        </h3>
-                        <div id="responseSource" class="text-sm text-gray-500 mb-2 flex items-center">
-                            <i class="fas fa-info-circle mr-1"></i> <span id="responseSourceText"></span>
-                        </div>
-                        <div id="responseContent" class="p-3 bg-hexa-purple-bg rounded-lg border border-gray-200 whitespace-pre-wrap"></div>
-                    </div>
-                </div>
+                </form>
             </div>
-        </div>
-        
-        <!-- Auto-Respond Settings -->
-        <div class="bg-white shadow-md rounded-xl p-6 mb-8 border-l-4 border-hexa-purple">
-            <h2 class="text-xl font-semibold mb-4 flex items-center">
-                <i class="fas fa-user-cog text-hexa-purple mr-2"></i> Individual User Auto-Respond Settings
-            </h2>
-            <p class="mb-4 text-gray-700">Enable or disable automatic responses for specific users. When enabled, the system will automatically reply to messages using the HEXA knowledge base and Ollama AI.</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h3 class="font-semibold text-gray-700 mb-3 flex items-center">
-                        <i class="fas fa-toggle-on text-green-500 mr-2"></i> Enable Auto-Respond
-                    </h3>
-                    <form action="/ollama-chat/auto-respond/enable" method="POST">
-                        <div class="mb-4">
-                            <label for="enableUserId" class="block text-gray-700 text-sm font-bold mb-2 flex items-center">
-                                <i class="fas fa-user text-hexa-purple mr-1"></i> User ID:
-                            </label>
-                            <input type="text" id="enableUserId" name="userId" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-hexa-purple focus:border-transparent transition" required>
-                        </div>
-                        <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition flex items-center">
-                            <i class="fas fa-check-circle mr-2"></i> Enable Auto-Respond
-                        </button>
-                    </form>
-                </div>
-                
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h3 class="font-semibold text-gray-700 mb-3 flex items-center">
-                        <i class="fas fa-toggle-off text-red-500 mr-2"></i> Disable Auto-Respond
-                    </h3>
-                    <form action="/ollama-chat/auto-respond/disable" method="POST">
-                        <div class="mb-4">
-                            <label for="disableUserId" class="block text-gray-700 text-sm font-bold mb-2 flex items-center">
-                                <i class="fas fa-user text-hexa-purple mr-1"></i> User ID:
-                            </label>
-                            <input type="text" id="disableUserId" name="userId" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-hexa-purple focus:border-transparent transition" required>
-                        </div>
-                        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 transition flex items-center">
-                            <i class="fas fa-times-circle mr-2"></i> Disable Auto-Respond
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Active Conversation States -->
-        <div class="bg-white shadow-md rounded-xl p-6 border-l-4 border-hexa-purple">
-            <h2 class="text-xl font-semibold mb-4 flex items-center">
-                <i class="fas fa-comments text-hexa-purple mr-2"></i> Active Conversations
-            </h2>
-            
-            <% if (conversationStates && conversationStates.length > 0) { %>
-                <div class="overflow-x-auto rounded-lg shadow">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    User ID
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Last Message
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Auto-Respond
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <% conversationStates.forEach(([userId, state]) => { %>
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">
-                                            <%= userId %>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= state.isNew ? 'bg-green-100 text-green-800' : 'bg-hexa-purple-bg text-hexa-purple-dark' %>">
-                                            <i class="<%= state.isNew ? 'fas fa-star' : 'fas fa-sync-alt' %> mr-1"></i> <%= state.isNew ? 'New Conversation' : 'Ongoing' %>
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-500 flex items-center">
-                                            <i class="fas fa-clock mr-1"></i> <%= new Date(state.lastMessageTime).toLocaleString() %>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <% const isAutoRespond = global.autoRespondUsers && global.autoRespondUsers.has(userId) %>
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= isAutoRespond ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
-                                            <i class="<%= isAutoRespond ? 'fas fa-robot' : 'fas fa-user' %> mr-1"></i> <%= isAutoRespond ? 'Enabled' : 'Disabled' %>
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center space-x-2">
-                                        <button onclick="document.getElementById('userId').value='<%= userId %>'; document.getElementById('message').focus();" class="text-hexa-purple hover:text-hexa-purple-dark flex items-center">
-                                            <i class="fas fa-reply mr-1"></i> Reply
-                                        </button>
-                                        <span class="text-gray-300">|</span>
-                                        <% if (isAutoRespond) { %>
-                                            <form action="/ollama-chat/auto-respond/disable" method="POST" class="inline">
-                                                <input type="hidden" name="userId" value="<%= userId %>">
-                                                <button type="submit" class="text-red-600 hover:text-red-900 flex items-center">
-                                                    <i class="fas fa-toggle-off mr-1"></i> Disable Auto
-                                                </button>
-                                            </form>
-                                        <% } else { %>
-                                            <form action="/ollama-chat/auto-respond/enable" method="POST" class="inline">
-                                                <input type="hidden" name="userId" value="<%= userId %>">
-                                                <button type="submit" class="text-green-600 hover:text-green-900 flex items-center">
-                                                    <i class="fas fa-toggle-on mr-1"></i> Enable Auto
-                                                </button>
-                                            </form>
-                                        <% } %>
-                                    </td>
-                                </tr>
-                            <% }); %>
-                        </tbody>
-                    </table>
-                </div>
-            <% } else { %>
-                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-exclamation-triangle text-yellow-400"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-yellow-700">
-                                No active conversations found. When users message you, their conversations will appear here.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            <% } %>
         </div>
     </div>
-    
-    <!-- JavaScript for test message functionality -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sendTestBtn = document.getElementById('sendTestBtn');
-            const responseArea = document.getElementById('responseArea');
-            const responseContent = document.getElementById('responseContent');
-            const responseSource = document.getElementById('responseSourceText');
-            
-            sendTestBtn.addEventListener('click', async function() {
-                const userId = document.getElementById('userId').value.trim();
-                const message = document.getElementById('message').value.trim();
-                
-                if (!userId || !message) {
-                    alert('Please enter both User ID and Message');
-                    return;
-                }
-                
-                // Show loading state
-                sendTestBtn.disabled = true;
-                sendTestBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Sending...';
-                
-                try {
-                    const response = await fetch('/ollama-chat/send', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ userId, message }),
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        responseContent.innerText = result.response;
-                        
-                        // Set source label with icon
-                        let sourceLabel = '';
-                        let icon = '';
-                        switch (result.source) {
-                            case 'knowledge-base':
-                                sourceLabel = 'Source: Knowledge Base (exact match)';
-                                icon = 'fas fa-book';
-                                break;
-                            case 'ollama':
-                                sourceLabel = 'Source: Ollama AI';
-                                icon = 'fas fa-robot';
-                                break;
-                            case 'welcome':
-                                sourceLabel = 'Source: Welcome Message';
-                                icon = 'fas fa-hand-paper';
-                                break;
-                            default:
-                                sourceLabel = 'Source: System';
-                                icon = 'fas fa-cog';
-                        }
-                        
-                        document.getElementById('responseSource').innerHTML = `<i class="${icon} mr-1"></i> <span id="responseSourceText">${sourceLabel}</span>`;
-                        responseArea.classList.remove('hidden');
-                    } else {
-                        alert('Error: ' + (result.error || 'Failed to send message'));
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
-                } finally {
-                    // Reset button state
-                    sendTestBtn.disabled = false;
-                    sendTestBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> Send Test Message';
-                }
-            });
-        });
-    </script>
 </body>
 </html>
